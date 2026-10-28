@@ -28,6 +28,12 @@ inputs.deepseek-harness = {
 
 在应用内配置凭据。Harness 数据默认位于 `~/.dsh`，设置 `DSH_HOME` 后则使用该目录。桌面配置位于此目录下的 `profiles/desktop`。Nix 不存储凭据，也不替换可变的用户设置。应用更新由 flake 锁文件管理。
 
+## Linux 窗口外观
+
+主窗口复用上游 40px 的一体式标题栏，保留原生窗口控件以及本地化的“应用”“编辑”菜单。标题栏背景与按钮颜色跟随应用主题，Linux 同时使用现有的圆角工作区和侧栏布局。欢迎窗口使用一体式标题栏及不透明的深浅色背景。窗口阴影与外侧圆角由合成器负责。
+
+标题栏复用 `preload-windows.ts` 及其上游 `data-windows-titlebar` 标记，使对话框和浮动面板沿用相同的避让区域。原生更新浮层也为标题栏保留空间。共享的 [Web 样式参考](../docs/web-styling.zh.md)和 `ui-theme` 仍负责视觉规范；此 fork 不另设主题或引入 UI 依赖。
+
 ## 维护
 
 [`default.nix`](default.nix) 构建当前源码及固定的 pnpm 依赖。Electron 固定为 `node-addon-require-builtin` 要求的精确版本；命令行也因此使用 Electron 的 Node 模式。打包过程编译静态 Landlock 启动器，并将 Bash 可执行文件设为其 Nix store 路径。

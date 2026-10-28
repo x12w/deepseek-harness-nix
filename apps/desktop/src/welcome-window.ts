@@ -3,17 +3,22 @@ import type { SignInAttemptId } from '@deepseek-ai/dsh-deepseek-account/types'
 
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { app, BrowserWindow, ipcMain, type BrowserWindowConstructorOptions, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, ipcMain, nativeTheme, type BrowserWindowConstructorOptions, type IpcMainInvokeEvent } from 'electron'
 import type { DesktopLocale } from './locale.ts'
 import { WELCOME_IPC, type WelcomeOperations } from './welcome-api.ts'
+
+function linuxWelcomeCaption(dark: boolean): { color: string; symbolColor: string; height: number } {
+  return { color: dark ? '#1b1b1c' : '#f9fafb', symbolColor: dark ? '#f9fafb' : '#0f1115', height: 42 }
+}
 
 /**
  * Resolve the fixed-size welcome window's native material and controls.
  * @param platform - operating system hosting Electron.
  * @param locale - shell-owned localized copy.
+ * @param dark - effective native color scheme for the Linux caption.
  * @returns sandboxed window options with a locale-only preload.
  */
-export function welcomeWindowOptions(platform: NodeJS.Platform, locale: DesktopLocale): BrowserWindowConstructorOptions {
+export function welcomeWindowOptions(platform: NodeJS.Platform, locale: DesktopLocale, dark = false): BrowserWindowConstructorOptions {
   return {
     width: 600,
     height: 700,
@@ -30,6 +35,11 @@ export function welcomeWindowOptions(platform: NodeJS.Platform, locale: DesktopL
       trafficLightPosition: { x: 21, y: 21 },
       vibrancy: 'menu',
       visualEffectState: 'active',
+    } as const : {}),
+    ...(platform === 'linux' ? {
+      titleBarStyle: 'hidden',
+      backgroundColor: linuxWelcomeCaption(dark).color,
+      titleBarOverlay: linuxWelcomeCaption(dark),
     } as const : {}),
     ...(platform === 'win32' ? {
       titleBarStyle: 'hidden',
@@ -57,13 +67,16 @@ let disposeActiveHandlers: (() => void) | undefined
  * @returns the visible window; a failed load destroys it before rejecting.
  */
 export async function openWelcomeWindow(locale: DesktopLocale, operations: WelcomeOperations): Promise<BrowserWindow> {
-  const options = welcomeWindowOptions(process.platform, locale)
+  const options = welcomeWindowOptions(process.platform, locale, nativeTheme.shouldUseDarkColors)
   const window = new BrowserWindow(options)
+  const syncCaption = (): void => { window.setTitleBarOverlay(linuxWelcomeCaption(nativeTheme.shouldUseDarkColors)) }
+  if (process.platform === 'linux') nativeTheme.on('updated', syncCaption)
   disposeActiveHandlers?.()
   let active = true
   const disposeHandlers = (): void => {
     if (!active) return
     active = false
+    if (process.platform === 'linux') nativeTheme.off('updated', syncCaption)
     for (const channel of [
       WELCOME_IPC.analyticsEnabled, WELCOME_IPC.analytics, WELCOME_IPC.takeNotice, WELCOME_IPC.saveApiKey,
       WELCOME_IPC.skip, WELCOME_IPC.start, WELCOME_IPC.cancel, WELCOME_IPC.copyLink,

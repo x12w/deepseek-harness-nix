@@ -37,6 +37,11 @@ body {
   }
 }
 
+/* Linux has no native vibrancy backing; keep both themes opaque and legible. */
+html[data-platform='linux'] body {
+  --welcome-tint: light-dark(#f9fafb, #1b1b1c);
+}
+
 * {
   box-sizing: border-box;
 }

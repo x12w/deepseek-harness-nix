@@ -28,6 +28,12 @@ Use `inputs.deepseek-harness.packages.x86_64-linux.default` in `environment.syst
 
 Configure credentials inside the application. Harness data defaults to `~/.dsh`, or `DSH_HOME` when set. The desktop profile lives under `profiles/desktop` within that directory. Nix does not store credentials or replace mutable user settings. Application updates are managed by the flake lock.
 
+## Linux window appearance
+
+The main window uses the upstream 40px integrated caption, with native window controls and localized Application/Edit menus. Its background and control colors follow the application theme. The existing rounded workspace and sidebar layout also apply on Linux. The welcome window uses an integrated caption and an opaque light or dark background. Window shadows and outer corners remain compositor-owned.
+
+The caption reuses `preload-windows.ts` and its upstream `data-windows-titlebar` marker so dialogs and floating panels retain the same clearance. Native update overlays reserve that caption too. The shared [Web styling reference](../docs/web-styling.md) and `ui-theme` remain the visual contract; this fork adds no separate theme or UI dependencies.
+
 ## Maintenance
 
 [`default.nix`](default.nix) builds the source tree and its pinned pnpm dependencies. Electron stays at the exact version required by `node-addon-require-builtin`; the CLI uses Electron in Node mode for the same reason. The package builds a static Landlock launcher and sets the Bash executable to its Nix store path.

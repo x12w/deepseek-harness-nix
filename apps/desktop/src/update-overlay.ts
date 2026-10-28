@@ -48,7 +48,7 @@ export class DesktopUpdateOverlays {
     input.active++; input.revision++
     const resize = (): void => {
       const { width, height } = parent.getContentBounds()
-      const top = process.platform === 'win32' ? WINDOWS_TITLEBAR_HEIGHT : 0
+      const top = process.platform === 'win32' || process.platform === 'linux' ? WINDOWS_TITLEBAR_HEIGHT : 0
       view.setBounds({ x: 0, y: top, width, height: Math.max(0, height - top) })
     }
     const focus = (): void => {

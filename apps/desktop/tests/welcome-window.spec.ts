@@ -7,9 +7,11 @@ const electron = vi.hoisted(() => ({
   create: vi.fn<(options: unknown) => ReturnType<typeof createWindow>>(),
   root: '/desktop-app',
   handlers: new Map<string, (event: unknown, value?: unknown, attributes?: unknown) => Promise<unknown>>(),
+  theme: { shouldUseDarkColors: false, on: vi.fn(), off: vi.fn() },
 }))
 vi.mock('electron', () => ({
   app: { getAppPath: () => electron.root },
+  nativeTheme: electron.theme,
   BrowserWindow: vi.fn(function (options: unknown) { return electron.create(options) }),
   ipcMain: {
     handle: (name: string, handler: (event: unknown, value?: unknown, attributes?: unknown) => Promise<unknown>) => {
@@ -33,11 +35,16 @@ function createWindow() {
     isDestroyed: vi.fn().mockReturnValue(false),
     destroy: vi.fn(),
     show: vi.fn(),
+    setTitleBarOverlay: vi.fn(),
     once: vi.fn<(name: string, callback: () => void) => void>(),
   }
 }
 
-beforeEach(() => { electron.create.mockReset(); electron.handlers.clear() })
+beforeEach(() => {
+  electron.create.mockReset(); electron.handlers.clear()
+  electron.theme.shouldUseDarkColors = false
+  electron.theme.on.mockClear(); electron.theme.off.mockClear()
+})
 
 const operations = {
   analyticsEnabled: async () => true,
@@ -69,10 +76,30 @@ describe('desktop welcome window', () => {
       expect(options.backgroundMaterial).toBe('acrylic')
       expect(options.titleBarOverlay).toMatchObject({ height: 42 })
     } else {
-      expect(options.backgroundColor).toBe('#FFFFFF')
+      expect(options.backgroundColor).toBe('#f9fafb')
+      expect(options.titleBarStyle).toBe('hidden')
+      expect(options.titleBarOverlay).toMatchObject({ color: '#f9fafb', symbolColor: '#0f1115', height: 42 })
       expect(options.vibrancy).toBeUndefined()
       expect(options.backgroundMaterial).toBeUndefined()
     }
+  })
+
+  it('keeps Linux caption symbols legible after theme changes and removes its listener on close', async () => {
+    const platform = vi.spyOn(process, 'platform', 'get').mockReturnValue('linux')
+    try {
+      const window = createWindow()
+      electron.create.mockReturnValue(window)
+      await openWelcomeWindow(resolveDesktopLocale('en'), operations)
+      const update = electron.theme.on.mock.calls[0]![1] as () => void
+      electron.theme.shouldUseDarkColors = true
+      update()
+      expect(window.setTitleBarOverlay).toHaveBeenLastCalledWith({ color: '#1b1b1c', symbolColor: '#f9fafb', height: 42 })
+      electron.theme.shouldUseDarkColors = false
+      update()
+      expect(window.setTitleBarOverlay).toHaveBeenLastCalledWith({ color: '#f9fafb', symbolColor: '#0f1115', height: 42 })
+      for (const [name, callback] of window.once.mock.calls) if (name === 'closed') callback()
+      expect(electron.theme.off).toHaveBeenCalledWith('updated', update)
+    } finally { platform.mockRestore() }
   })
 
   it('waits for its local document and blocks renderer navigation', async () => {
