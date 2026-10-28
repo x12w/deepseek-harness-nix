@@ -16,6 +16,7 @@
   autoPatchelfHook,
   bash,
   xdg-utils,
+  xdg-user-dirs,
   ripgrep,
   git,
   pkgsStatic,
@@ -155,6 +156,7 @@ stdenv.mkDerivation (finalAttrs: {
           nodejs
           pnpm
           xdg-utils
+          xdg-user-dirs
           ripgrep
           git
         ]
@@ -169,6 +171,7 @@ stdenv.mkDerivation (finalAttrs: {
           nodejs
           pnpm
           xdg-utils
+          xdg-user-dirs
           ripgrep
           git
         ]
