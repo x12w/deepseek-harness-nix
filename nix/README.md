@@ -30,6 +30,8 @@ Configure credentials inside the application. Harness data defaults to `~/.dsh`,
 
 ## Linux window appearance
 
+The application menu uses the upstream Harness icon. The package installs its SVG in `hicolor/scalable/apps` and a PNG fallback in `pixmaps`, both named `deepseek-harness` to match the desktop entry.
+
 The main window uses the upstream 40px integrated caption, with native window controls and localized Application/Edit menus. Its background and control colors follow the application theme. The existing rounded workspace and sidebar layout also apply on Linux. The welcome window uses an integrated caption and an opaque light or dark background. Window shadows and outer corners remain compositor-owned.
 
 The caption reuses `preload-windows.ts` and its upstream `data-windows-titlebar` marker so dialogs and floating panels retain the same clearance. Native update overlays reserve that caption too. The shared [Web styling reference](../docs/web-styling.md) and `ui-theme` remain the visual contract; this fork adds no separate theme or UI dependencies.

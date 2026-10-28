@@ -30,6 +30,8 @@ inputs.deepseek-harness = {
 
 ## Linux 窗口外观
 
+应用菜单使用上游 Harness 图标。包将 SVG 安装到 `hicolor/scalable/apps`，并在 `pixmaps` 中提供 PNG 后备图标；两者均命名为 `deepseek-harness`，与桌面入口一致。
+
 主窗口复用上游 40px 的一体式标题栏，保留原生窗口控件以及本地化的“应用”“编辑”菜单。标题栏背景与按钮颜色跟随应用主题，Linux 同时使用现有的圆角工作区和侧栏布局。欢迎窗口使用一体式标题栏及不透明的深浅色背景。窗口阴影与外侧圆角由合成器负责。
 
 标题栏复用 `preload-windows.ts` 及其上游 `data-windows-titlebar` 标记，使对话框和浮动面板沿用相同的避让区域。原生更新浮层也为标题栏保留空间。共享的 [Web 样式参考](../docs/web-styling.zh.md)和 `ui-theme` 仍负责视觉规范；此 fork 不另设主题或引入 UI 依赖。

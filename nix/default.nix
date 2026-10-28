@@ -177,8 +177,11 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
 
+    # hicolor indexes scalable/apps, but not a 1024x1024/apps directory.
+    install -Dm644 apps/desktop/resources/icon-windows.svg \
+      "$out/share/icons/hicolor/scalable/apps/deepseek-harness.svg"
     install -Dm644 apps/desktop/resources/icon-windows.png \
-      "$out/share/icons/hicolor/1024x1024/apps/deepseek-harness.png"
+      "$out/share/pixmaps/deepseek-harness.png"
     runHook postInstall
   '';
 
