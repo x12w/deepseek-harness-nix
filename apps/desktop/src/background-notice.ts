@@ -1,4 +1,4 @@
-/** One-time Windows confirmation before hiding the application in the tray. */
+/** One-time confirmation before hiding the application in the Windows or Linux tray. */
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'

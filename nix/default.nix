@@ -96,6 +96,16 @@ stdenv.mkDerivation (finalAttrs: {
         "'win-x64': { platform: 'win32', arch: 'x64' }, 'linux-x64': { platform: 'linux', arch: 'x64' },"
     substituteInPlace packages/terminal/terminal-bash/src/config.ts \
       --replace-fail "'/bin/bash'" "'${bash}/bin/bash'"
+    # Electron derives Wayland app_id and X11 WM_CLASS from desktopName.
+    python3 - <<'PY'
+    import json
+    from pathlib import Path
+
+    manifest = Path("apps/desktop/package.json")
+    package = json.loads(manifest.read_text())
+    package["desktopName"] = "deepseek-harness.desktop"
+    manifest.write_text(json.dumps(package, indent=2) + "\n")
+    PY
   '';
 
   env = {
@@ -144,7 +154,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs apps/desktop/scripts/node-bin
 
     makeWrapper ${electron}/bin/electron "$out/bin/deepseek-harness" \
-      --add-flags "$app/apps/desktop --class=deepseek-harness" \
+      --add-flags "$app/apps/desktop" \
       --set DSH_DESKTOP_DSH_DIR "$app/desktop-runtime" \
       --set DSH_DESKTOP_PRIMARY_RUNTIME_DIR "$app/runtime/primary-runtime" \
       --set DSH_DESKTOP_PNPM_ENTRY "${pnpm}/libexec/pnpm/bin/pnpm.mjs" \
