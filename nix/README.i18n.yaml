@@ -1,0 +1,13 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write nix/README.md
+/deepseek-harness-on-nixos:
+  en: 681499d271757922
+  zh: 0fc56ad727866c1b
+/deepseek-harness-on-nixos/usage:
+  en: 2b0c353f821488ff
+  zh: c23414885956e1be
+/deepseek-harness-on-nixos/maintenance:
+  en: 6e442eee663dba5c
+  zh: 3e8d8aebe206e2f8
