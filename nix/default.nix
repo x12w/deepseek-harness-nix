@@ -7,6 +7,8 @@
   pnpmConfigHook,
   nodejs,
   python3,
+  pkg-config,
+  vips,
   writableTmpDirAsHomeHook,
   callPackage,
   electron_44-bin,
@@ -68,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm
     pnpmConfigHook
     python3
+    pkg-config
     writableTmpDirAsHomeHook
     makeWrapper
     copyDesktopItems
@@ -81,6 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
     libxkbcommon
     ncurses
+    vips
   ];
 
   # Preserve bundled executables with embedded resources; autoPatchelf owns ELF edits.
@@ -120,6 +124,10 @@ stdenv.mkDerivation (finalAttrs: {
   buildPhase = ''
     runHook preBuild
     pnpm rebuild esbuild node-pty koffi
+    # Electron and sharp must share Nix's GLib instead of loading the bundled copy.
+    SHARP_FORCE_GLOBAL_LIBVIPS=1 node node_modules/.pnpm/node_modules/node-gyp/bin/node-gyp.js \
+      rebuild --directory="$(realpath node_modules/.pnpm/node_modules/sharp)/src" \
+      --nodedir=${nodejs} --jobs="$NIX_BUILD_CORES"
     pnpm run build
     runHook postBuild
   '';
@@ -218,6 +226,8 @@ stdenv.mkDerivation (finalAttrs: {
     test -s "$out/lib/deepseek-harness/apps/web/dist/index.html"
     ELECTRON_RUN_AS_NODE=1 ${electron}/bin/electron --expose-internals \
       ${./check-runtime.cjs} "$out/lib/deepseek-harness/desktop-runtime" ${bash}/bin/bash
+    ELECTRON_RUN_AS_NODE=1 ${electron}/bin/electron \
+      ${./check-images.cjs} "$out/lib/deepseek-harness/desktop-runtime"
     runHook postInstallCheck
   '';
 

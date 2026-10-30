@@ -42,6 +42,8 @@ inputs.deepseek-harness = {
 
 [`default.nix`](default.nix) 构建当前源码及固定的 pnpm 依赖。Electron 固定为 `node-addon-require-builtin` 要求的精确版本；命令行也因此使用 Electron 的 Node 模式。打包过程编译静态 Landlock 启动器，并将 Bash 可执行文件设为其 Nix store 路径。
 
+包使用 Nix 的 libvips 和 GLib 编译 `sharp`，与 Electron 共享依赖。预编译的 Linux sharp 二进制文件捆绑了存在冲突的 GLib，读取图片元数据时可能导致 Host 崩溃。每次构建时，[`check-images.cjs`](check-images.cjs) 都会在安装后的 Electron 运行环境中检查图片解码、缩放、PNG/JPEG/WebP 编码及无效输入处理。
+
 [`primary-runtime.nix`](primary-runtime.nix) 读取上游[运行环境锁文件](../scripts/primary-runtime/lock.json)，准备 Python 文档处理环境。Node.js 和 pnpm 来自 Nix。应用将此运行环境复制到其可写的数据目录中。
 
 合并上游修改后，核对包清单中的 pnpm 和 Electron 版本。若依赖发生变化，将 `pnpmDeps.hash` 设为空字符串，构建一次，再填入 Nix 报告的哈希值。更新使用方之前，运行 `nix flake check` 并启动桌面应用。构建过程检查命令行版本、Node 内部接口访问、PTY 执行及 Python 导入。图形界面启动需要单独进行冒烟检查。

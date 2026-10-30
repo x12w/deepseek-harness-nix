@@ -42,6 +42,8 @@ The caption reuses `preload-windows.ts` and its upstream `data-windows-titlebar`
 
 [`default.nix`](default.nix) builds the source tree and its pinned pnpm dependencies. Electron stays at the exact version required by `node-addon-require-builtin`; the CLI uses Electron in Node mode for the same reason. The package builds a static Landlock launcher and sets the Bash executable to its Nix store path.
 
+The package compiles `sharp` against Nix's libvips and GLib, shared with Electron. The prebuilt Linux sharp binary bundles a conflicting GLib that can crash the Host when reading image metadata. [`check-images.cjs`](check-images.cjs) checks image decoding, resizing, PNG/JPEG/WebP encoding, and invalid input under the installed Electron runtime during every build.
+
 [`primary-runtime.nix`](primary-runtime.nix) reads the upstream [runtime lock](../scripts/primary-runtime/lock.json) and prepares the Python document-processing environment. Node.js and pnpm come from Nix. The application copies this runtime into its writable data directory.
 
 After merging upstream changes, check the pnpm and Electron versions against the package manifests. If dependencies changed, set `pnpmDeps.hash` to an empty string, build once, and replace it with the hash reported by Nix. Run `nix flake check` and launch the desktop before updating consumers. The build checks the CLI version, Node internal access, PTY execution, and Python imports. Graphical startup requires a separate smoke check.
